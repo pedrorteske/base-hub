@@ -1,9 +1,7 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { pricingData, pricingCategories, PricingItem } from "@/data/pricing";
 import {
   Plane,
-  ArrowLeft,
   Fuel,
   ParkingCircle,
   Warehouse,
@@ -15,6 +13,7 @@ import {
   Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NavigationMenu } from "@/components/dashboard/NavigationMenu";
 
 const categoryIcons: Record<string, React.ElementType> = {
   "Combustível": Fuel,
@@ -107,14 +106,7 @@ const Pricing = () => {
       <header className="bg-navy text-primary-foreground sticky top-0 z-50 shadow-lg">
         <div className="container py-4">
           <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Link>
-            <div className="h-6 w-px bg-primary-foreground/20" />
+            <NavigationMenu />
             <div className="flex items-center gap-3">
               <div className="bg-primary/20 p-2 rounded-lg">
                 <Plane className="w-6 h-6 text-primary" />
