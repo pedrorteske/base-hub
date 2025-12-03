@@ -1,4 +1,4 @@
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,6 +16,9 @@ interface SearchFilterProps {
   stateFilter: string;
   onStateFilterChange: (value: string) => void;
   states: string[];
+  regionFilter: string;
+  onRegionFilterChange: (value: string) => void;
+  regions: string[];
 }
 
 export function SearchFilter({
@@ -26,6 +29,9 @@ export function SearchFilter({
   stateFilter,
   onStateFilterChange,
   states,
+  regionFilter,
+  onRegionFilterChange,
+  regions,
 }: SearchFilterProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
@@ -38,7 +44,21 @@ export function SearchFilter({
           className="pl-9 bg-card border-border"
         />
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        <Select value={regionFilter} onValueChange={onRegionFilterChange}>
+          <SelectTrigger className="w-[130px] bg-card">
+            <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Região" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas</SelectItem>
+            {regions.map((region) => (
+              <SelectItem key={region} value={region}>
+                {region}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={onStatusFilterChange}>
           <SelectTrigger className="w-[140px] bg-card">
             <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
