@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { pricingData, pricingCategories } from "@/data/pricing";
+import { pricingData, pricingCategories, PricingItem } from "@/data/pricing";
 import {
   Plane,
   ArrowLeft,
@@ -11,6 +11,8 @@ import {
   Users,
   HardHat,
   Info,
+  Globe,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,12 +30,71 @@ const Pricing = () => {
 
   const filteredPricing = pricingData.filter((item) => item.category === activeCategory);
 
+  const { nacionalPricing, internacionalPricing } = useMemo(() => {
+    if (activeCategory !== "Estacionamento") {
+      return { nacionalPricing: [], internacionalPricing: [] };
+    }
+    return {
+      nacionalPricing: filteredPricing.filter((item) => item.subcategory === "nacional"),
+      internacionalPricing: filteredPricing.filter((item) => item.subcategory === "internacional"),
+    };
+  }, [activeCategory, filteredPricing]);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(price);
   };
+
+  const renderPricingTable = (items: PricingItem[], title?: string, icon?: React.ReactNode) => (
+    <div className="glass-card rounded-lg overflow-hidden">
+      {title && (
+        <div className="bg-secondary/70 px-6 py-3 border-b border-border flex items-center gap-2">
+          {icon}
+          <h3 className="font-semibold text-foreground">{title}</h3>
+        </div>
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-secondary/50">
+              <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">
+                Serviço
+              </th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">
+                Unidade
+              </th>
+              <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">
+                Valor
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {items.map((item, index) => (
+              <tr
+                key={item.id}
+                className="hover:bg-secondary/30 transition-colors animate-fade-in"
+                style={{ animationDelay: `${index * 30}ms` }}
+              >
+                <td className="py-3 px-4">
+                  <span className="font-medium text-foreground text-sm">{item.service}</span>
+                </td>
+                <td className="py-3 px-4">
+                  <span className="text-sm text-muted-foreground">{item.unit}</span>
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <span className="font-semibold text-primary font-mono text-sm">
+                    {formatPrice(item.price)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,57 +163,72 @@ const Pricing = () => {
           </div>
         </div>
 
-        {/* Pricing Table */}
-        <div className="glass-card rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-secondary/50">
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
-                    Serviço
-                  </th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
-                    Unidade
-                  </th>
-                  <th className="text-right py-4 px-6 text-sm font-semibold text-foreground">
-                    Valor
-                  </th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
-                    Observações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredPricing.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-secondary/30 transition-colors animate-fade-in"
-                    style={{ animationDelay: `${index * 30}ms` }}
-                  >
-                    <td className="py-4 px-6">
-                      <span className="font-medium text-foreground">{item.service}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="text-sm text-muted-foreground">{item.unit}</span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="font-semibold text-primary font-mono">
-                        {formatPrice(item.price)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      {item.notes ? (
-                        <span className="text-sm text-muted-foreground italic">{item.notes}</span>
-                      ) : (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Pricing Tables */}
+        {activeCategory === "Estacionamento" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {renderPricingTable(
+              nacionalPricing,
+              "Voos Nacionais",
+              <Home className="w-5 h-5 text-success" />
+            )}
+            {renderPricingTable(
+              internacionalPricing,
+              "Voos Internacionais",
+              <Globe className="w-5 h-5 text-primary" />
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="glass-card rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-secondary/50">
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
+                      Serviço
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
+                      Unidade
+                    </th>
+                    <th className="text-right py-4 px-6 text-sm font-semibold text-foreground">
+                      Valor
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
+                      Observações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredPricing.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-secondary/30 transition-colors animate-fade-in"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <td className="py-4 px-6">
+                        <span className="font-medium text-foreground">{item.service}</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="text-sm text-muted-foreground">{item.unit}</span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <span className="font-semibold text-primary font-mono">
+                          {formatPrice(item.price)}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        {item.notes ? (
+                          <span className="text-sm text-muted-foreground italic">{item.notes}</span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
