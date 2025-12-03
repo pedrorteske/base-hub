@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { mockBases } from "@/data/mockBases";
 import { BaseCard } from "@/components/dashboard/BaseCard";
 import { SearchFilter } from "@/components/dashboard/SearchFilter";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
-import { Plane } from "lucide-react";
+import { Plane, DollarSign } from "lucide-react";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,16 +36,25 @@ const Index = () => {
       {/* Header */}
       <header className="bg-navy text-primary-foreground sticky top-0 z-50 shadow-lg">
         <div className="container py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/20 p-2 rounded-lg">
-              <Plane className="w-6 h-6 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/20 p-2 rounded-lg">
+                <Plane className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Central de Bases</h1>
+                <p className="text-sm text-primary-foreground/70">
+                  Dashboard de Operações Aéreas
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">Central de Bases</h1>
-              <p className="text-sm text-primary-foreground/70">
-                Dashboard de Operações Aéreas
-              </p>
-            </div>
+            <Link
+              to="/precos"
+              className="flex items-center gap-2 px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary-foreground rounded-lg transition-colors text-sm font-medium"
+            >
+              <DollarSign className="w-4 h-4" />
+              Tabela de Preços
+            </Link>
           </div>
         </div>
       </header>
