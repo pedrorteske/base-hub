@@ -59,10 +59,11 @@ export const mockBases: Base[] = [
     city: "Florianópolis",
     state: "SC",
     region: "Sul",
+    airportCategory: 7,
     manager: {
-      name: "Carolina Machado",
-      phone: "(48) 99876-5432",
-      email: "carolina.machado@aviacao.com.br",
+      name: "Roberto Vignoli",
+      phone: "+55 48 3236-0627",
+      email: "rvignoli@dnata.com.br",
     },
     federalPolice: {
       present: true,
@@ -80,7 +81,7 @@ export const mockBases: Base[] = [
       },
       hours: { open: "08:00", close: "17:00" },
     },
-    airportHours: { open: "06:00", close: "22:30" },
+    airportHours: { open: "00:00", close: "23:59", is24h: true },
     services: [
       { name: "Abastecimento JET-A1", available: true },
       { name: "Abastecimento AVGAS", available: true },

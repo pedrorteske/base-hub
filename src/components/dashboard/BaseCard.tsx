@@ -41,6 +41,11 @@ export function BaseCard({ base }: BaseCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-mono text-sm text-primary/80">{base.icaoCode}</span>
+              {base.airportCategory && (
+                <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                  CAT {base.airportCategory}
+                </span>
+              )}
               <StatusBadge status={base.status} />
             </div>
             <h2 className="text-lg font-semibold truncate">{base.name}</h2>
