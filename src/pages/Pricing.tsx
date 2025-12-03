@@ -162,18 +162,30 @@ const Pricing = () => {
 
         {/* Pricing Tables */}
         {activeCategory === "Estacionamento" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {renderPricingTable(
-              nacionalPricing,
-              "Voos Nacionais",
-              <Home className="w-5 h-5 text-success" />
-            )}
-            {renderPricingTable(
-              internacionalPricing,
-              "Voos Internacionais",
-              <Globe className="w-5 h-5 text-primary" />,
-              { service: "Categoria de Aeronave", unit: "MTOW" }
-            )}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {renderPricingTable(
+                nacionalPricing,
+                "Voos Nacionais",
+                <Home className="w-5 h-5 text-success" />
+              )}
+              {renderPricingTable(
+                internacionalPricing,
+                "Voos Internacionais",
+                <Globe className="w-5 h-5 text-primary" />,
+                { service: "Categoria de Aeronave", unit: "MTOW" }
+              )}
+            </div>
+            {/* Tax Notice */}
+            <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/30 rounded-lg">
+              <Info className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-foreground">Taxas Adicionais</p>
+                <p className="text-muted-foreground">
+                  Sobre os valores de estacionamento incidem: <span className="font-semibold text-foreground">15% de taxa de serviço</span> + <span className="font-semibold text-foreground">16,62% de impostos federais</span>.
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="glass-card rounded-lg overflow-hidden">
