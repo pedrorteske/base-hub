@@ -47,7 +47,12 @@ const Pricing = () => {
     }).format(price);
   };
 
-  const renderPricingTable = (items: PricingItem[], title?: string, icon?: React.ReactNode) => (
+  const renderPricingTable = (
+    items: PricingItem[], 
+    title?: string, 
+    icon?: React.ReactNode,
+    columnLabels?: { service?: string; unit?: string }
+  ) => (
     <div className="glass-card rounded-lg overflow-hidden">
       {title && (
         <div className="bg-secondary/70 px-6 py-3 border-b border-border flex items-center gap-2">
@@ -60,10 +65,10 @@ const Pricing = () => {
           <thead>
             <tr className="bg-secondary/50">
               <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">
-                Serviço
+                {columnLabels?.service || "Serviço"}
               </th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">
-                Unidade
+                {columnLabels?.unit || "Unidade"}
               </th>
               <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">
                 Valor
@@ -174,7 +179,8 @@ const Pricing = () => {
             {renderPricingTable(
               internacionalPricing,
               "Voos Internacionais",
-              <Globe className="w-5 h-5 text-primary" />
+              <Globe className="w-5 h-5 text-primary" />,
+              { service: "Categoria de Aeronave", unit: "MTOW" }
             )}
           </div>
         ) : (
