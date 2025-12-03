@@ -16,12 +16,15 @@ export interface ServiceAvailability {
   notes?: string;
 }
 
+export type Region = "Sul" | "Sudeste" | "Centro-Oeste" | "Nordeste" | "Norte";
+
 export interface Base {
   id: string;
   name: string;
   icaoCode: string;
   city: string;
   state: string;
+  region: Region;
   manager: ContactInfo;
   federalPolice: {
     present: boolean;

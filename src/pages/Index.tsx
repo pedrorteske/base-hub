@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { mockBases } from "@/data/mockBases";
+import { mockBases, regions } from "@/data/mockBases";
 import { BaseCard } from "@/components/dashboard/BaseCard";
 import { SearchFilter } from "@/components/dashboard/SearchFilter";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
-import { Plane, DollarSign } from "lucide-react";
+import { Plane, DollarSign, MapPin } from "lucide-react";
+import { Region } from "@/types/base";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
+  const [regionFilter, setRegionFilter] = useState<string>("all");
 
   const states = useMemo(() => {
     const uniqueStates = [...new Set(mockBases.map((b) => b.state))];
@@ -26,10 +28,22 @@ const Index = () => {
 
       const matchesStatus = statusFilter === "all" || base.status === statusFilter;
       const matchesState = stateFilter === "all" || base.state === stateFilter;
+      const matchesRegion = regionFilter === "all" || base.region === regionFilter;
 
-      return matchesSearch && matchesStatus && matchesState;
+      return matchesSearch && matchesStatus && matchesState && matchesRegion;
     });
-  }, [searchQuery, statusFilter, stateFilter]);
+  }, [searchQuery, statusFilter, stateFilter, regionFilter]);
+
+  const basesByRegion = useMemo(() => {
+    const grouped: Record<string, typeof filteredBases> = {};
+    filteredBases.forEach((base) => {
+      if (!grouped[base.region]) {
+        grouped[base.region] = [];
+      }
+      grouped[base.region].push(base);
+    });
+    return grouped;
+  }, [filteredBases]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,6 +87,9 @@ const Index = () => {
           stateFilter={stateFilter}
           onStateFilterChange={setStateFilter}
           states={states}
+          regionFilter={regionFilter}
+          onRegionFilterChange={setRegionFilter}
+          regions={regions.map(r => r.name)}
         />
 
         {/* Results Count */}
@@ -82,16 +99,27 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Base Cards Grid */}
+        {/* Base Cards by Region */}
         {filteredBases.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filteredBases.map((base, index) => (
-              <div
-                key={base.id}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <BaseCard base={base} />
-              </div>
+          <div className="space-y-8">
+            {Object.entries(basesByRegion).map(([region, bases]) => (
+              <section key={region} className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-border">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-foreground">Região {region}</h2>
+                  <span className="text-sm text-muted-foreground">({bases.length} {bases.length === 1 ? "base" : "bases"})</span>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {bases.map((base, index) => (
+                    <div
+                      key={base.id}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <BaseCard base={base} />
+                    </div>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         ) : (
