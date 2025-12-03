@@ -304,6 +304,52 @@ export const mockBases: Base[] = [
     },
     status: "operational",
   },
+  {
+    id: "7",
+    name: "Base São Paulo - Congonhas",
+    icaoCode: "SBSP",
+    city: "São Paulo",
+    state: "SP",
+    region: "Sudeste",
+    airportCategory: 7,
+    manager: {
+      name: "Renata Paulista",
+      phone: "(11) 99567-8901",
+      email: "renata.paulista@aviacao.com.br",
+    },
+    federalPolice: {
+      present: true,
+      contact: {
+        name: "Delegacia PF Congonhas",
+        phone: "(11) 5090-9000",
+      },
+      hours: { open: "06:00", close: "23:00" },
+    },
+    federalRevenue: {
+      present: false,
+    },
+    airportHours: { open: "06:00", close: "23:00" },
+    services: [
+      { name: "Abastecimento JET-A1", available: true },
+      { name: "Abastecimento AVGAS", available: true },
+      { name: "GPU", available: true },
+      { name: "Reboque", available: true },
+      { name: "Hangaragem", available: true },
+      { name: "Manutenção", available: true },
+      { name: "Catering", available: true },
+      { name: "Crew Lounge", available: true },
+      { name: "VIP Lounge", available: true },
+    ],
+    equipment: ["GPU 28V", "GPU 115V", "Escada grande", "Escada pequena", "Rebocador", "Carrinho de bagagem", "Extintor ABC", "Ar condicionado de solo"],
+    capacity: {
+      maxAircraftLength: 42,
+      maxAircraftWingspan: 36,
+      maxAircraftWeight: 70,
+      parkingSpots: 10,
+      hangarCapacity: 4,
+    },
+    status: "operational",
+  },
   // Região Norte
   {
     id: "7",
