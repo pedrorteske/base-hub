@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { mockBases, regions } from "@/data/mockBases";
 import { BaseCard } from "@/components/dashboard/BaseCard";
 import { SearchFilter } from "@/components/dashboard/SearchFilter";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
-import { Plane, DollarSign, MapPin } from "lucide-react";
+import { NavigationMenu } from "@/components/dashboard/NavigationMenu";
+import { Plane, MapPin } from "lucide-react";
 import { Region } from "@/types/base";
 
 const Index = () => {
@@ -51,24 +51,20 @@ const Index = () => {
       <header className="bg-navy text-primary-foreground sticky top-0 z-50 shadow-lg">
         <div className="container py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/20 p-2 rounded-lg">
-                <Plane className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">Central de Bases</h1>
-                <p className="text-sm text-primary-foreground/70">
-                  Dashboard de Operações Aéreas
-                </p>
+            <div className="flex items-center gap-4">
+              <NavigationMenu />
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/20 p-2 rounded-lg">
+                  <Plane className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold">Central de Bases</h1>
+                  <p className="text-sm text-primary-foreground/70">
+                    Dashboard de Operações Aéreas
+                  </p>
+                </div>
               </div>
             </div>
-            <Link
-              to="/precos"
-              className="flex items-center gap-2 px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary-foreground rounded-lg transition-colors text-sm font-medium"
-            >
-              <DollarSign className="w-4 h-4" />
-              Tabela de Preços
-            </Link>
           </div>
         </div>
       </header>
