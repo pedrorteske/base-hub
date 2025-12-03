@@ -25,6 +25,7 @@ export interface Base {
   city: string;
   state: string;
   region: Region;
+  airportCategory?: number;
   manager: ContactInfo;
   federalPolice: {
     present: boolean;
