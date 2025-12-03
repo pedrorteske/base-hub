@@ -41,9 +41,9 @@ const Pricing = () => {
   }, [activeCategory, filteredPricing]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("pt-BR", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "BRL",
+      currency: "USD",
     }).format(price);
   };
 
@@ -290,7 +290,7 @@ const Pricing = () => {
       {/* Footer */}
       <footer className="bg-card border-t border-border py-4 mt-8">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>Valores em reais (BRL) — Última atualização: Dezembro 2024</p>
+          <p>Valores em dólares (USD) — Última atualização: Dezembro 2024</p>
         </div>
       </footer>
     </div>
