@@ -1,25 +1,14 @@
 import { useState, useMemo } from "react";
 import { pricingData, pricingCategories, PricingItem } from "@/data/pricing";
-import {
-  Plane,
-  Fuel,
-  ParkingCircle,
-  Warehouse,
-  Wrench,
-  Users,
-  HardHat,
-  Info,
-  Globe,
-  Home,
-} from "lucide-react";
+import { Plane, Fuel, ParkingCircle, Warehouse, Wrench, Users, HardHat, Info, Globe, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavigationMenu } from "@/components/dashboard/NavigationMenu";
 
 const categoryIcons: Record<string, React.ElementType> = {
-  "Combustível": Fuel,
-  "Estacionamento": ParkingCircle,
-  "Hangaragem": Warehouse,
-  "Equipamentos": Wrench,
+  Combustível: Fuel,
+  "Handling Service": ParkingCircle,
+  Hangaragem: Warehouse,
+  Equipamentos: Wrench,
   "Serviços de Rampa": HardHat,
   "Crew e Passageiros": Users,
 };
@@ -47,10 +36,10 @@ const Pricing = () => {
   };
 
   const renderPricingTable = (
-    items: PricingItem[], 
-    title?: string, 
+    items: PricingItem[],
+    title?: string,
     icon?: React.ReactNode,
-    columnLabels?: { service?: string; unit?: string }
+    columnLabels?: { service?: string; unit?: string },
   ) => (
     <div className="glass-card rounded-lg overflow-hidden">
       {title && (
@@ -69,9 +58,7 @@ const Pricing = () => {
               <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">
                 {columnLabels?.unit || "Unidade"}
               </th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">
-                Valor
-              </th>
+              <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">Valor</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -88,9 +75,7 @@ const Pricing = () => {
                   <span className="text-sm text-muted-foreground">{item.unit}</span>
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <span className="font-semibold text-primary font-mono text-sm">
-                    {formatPrice(item.price)}
-                  </span>
+                  <span className="font-semibold text-primary font-mono text-sm">{formatPrice(item.price)}</span>
                 </td>
               </tr>
             ))}
@@ -113,9 +98,7 @@ const Pricing = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold">Tabela de Preços</h1>
-                <p className="text-sm text-primary-foreground/70">
-                  Valores padrão para todas as bases
-                </p>
+                <p className="text-sm text-primary-foreground/70">Valores padrão para todas as bases</p>
               </div>
             </div>
           </div>
@@ -137,7 +120,7 @@ const Pricing = () => {
                   "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-md"
-                    : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-border"
+                    : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-border",
                 )}
               >
                 <Icon className="w-4 h-4" />
@@ -153,9 +136,9 @@ const Pricing = () => {
           <div className="text-sm">
             <p className="font-medium text-foreground">Valores de referência</p>
             <p className="text-muted-foreground">
-              Os preços listados são valores padrão aplicáveis a todas as bases. Valores podem sofrer
-              alterações conforme demanda, disponibilidade e condições especiais. Entre em contato com
-              o gerente da base para cotações específicas.
+              Os preços listados são valores padrão aplicáveis a todas as bases. Valores podem sofrer alterações
+              conforme demanda, disponibilidade e condições especiais. Entre em contato com o gerente da base para
+              cotações específicas.
             </p>
           </div>
         </div>
@@ -164,16 +147,12 @@ const Pricing = () => {
         {activeCategory === "Estacionamento" ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {renderPricingTable(
-                nacionalPricing,
-                "Voos Nacionais",
-                <Home className="w-5 h-5 text-success" />
-              )}
+              {renderPricingTable(nacionalPricing, "Voos Nacionais", <Home className="w-5 h-5 text-success" />)}
               {renderPricingTable(
                 internacionalPricing,
                 "Voos Internacionais",
                 <Globe className="w-5 h-5 text-primary" />,
-                { service: "Categoria de Aeronave", unit: "MTOW" }
+                { service: "Categoria de Aeronave", unit: "MTOW" },
               )}
             </div>
             {/* Tax Notice */}
@@ -182,7 +161,9 @@ const Pricing = () => {
               <div className="text-sm">
                 <p className="font-medium text-foreground">Taxas Adicionais</p>
                 <p className="text-muted-foreground">
-                  Sobre os valores de estacionamento incidem: <span className="font-semibold text-foreground">15% de taxa de serviço</span> + <span className="font-semibold text-foreground">16,62% de impostos federais</span>.
+                  Sobre os valores de estacionamento incidem:{" "}
+                  <span className="font-semibold text-foreground">15% de taxa de serviço</span> +{" "}
+                  <span className="font-semibold text-foreground">16,62% de impostos federais</span>.
                 </p>
               </div>
             </div>
@@ -193,18 +174,10 @@ const Pricing = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-secondary/50">
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
-                      Serviço
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
-                      Unidade
-                    </th>
-                    <th className="text-right py-4 px-6 text-sm font-semibold text-foreground">
-                      Valor
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">
-                      Observações
-                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">Serviço</th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">Unidade</th>
+                    <th className="text-right py-4 px-6 text-sm font-semibold text-foreground">Valor</th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-foreground">Observações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -221,9 +194,7 @@ const Pricing = () => {
                         <span className="text-sm text-muted-foreground">{item.unit}</span>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <span className="font-semibold text-primary font-mono">
-                          {formatPrice(item.price)}
-                        </span>
+                        <span className="font-semibold text-primary font-mono">{formatPrice(item.price)}</span>
                       </td>
                       <td className="py-4 px-6">
                         {item.notes ? (
@@ -284,15 +255,9 @@ const Pricing = () => {
 
           <div className="glass-card rounded-lg p-4">
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Contato Comercial</h3>
-            <p className="text-sm text-foreground mb-2">
-              Para cotações especiais ou contratos:
-            </p>
-            <p className="text-sm text-muted-foreground">
-              comercial@aviacao.com.br
-            </p>
-            <p className="text-sm text-muted-foreground">
-              (11) 3000-0000
-            </p>
+            <p className="text-sm text-foreground mb-2">Para cotações especiais ou contratos:</p>
+            <p className="text-sm text-muted-foreground">comercial@aviacao.com.br</p>
+            <p className="text-sm text-muted-foreground">(11) 3000-0000</p>
           </div>
         </div>
       </main>
