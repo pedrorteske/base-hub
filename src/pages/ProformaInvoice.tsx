@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Printer, FileText, Save, Trash2, Copy, Eye } from "lucide-react";
+import { ArrowLeft, Printer, FileText, Save, Trash2, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,13 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
+interface InvoiceItem {
+  id: string;
+  descricao: string;
+  quantidade: string;
+  valorUnitario: string;
+}
+
 interface FormData {
   cliente: string;
   operador: string;
@@ -30,9 +37,7 @@ interface FormData {
   dataVoo: string;
   dolarDia: string;
   data: string;
-  descricao: string;
-  quantidade: string;
-  valorUnitario: string;
+  items: InvoiceItem[];
 }
 
 interface SavedInvoice {
@@ -44,6 +49,13 @@ interface SavedInvoice {
 }
 
 const STORAGE_KEY = "proforma_invoices";
+
+const createEmptyItem = (): InvoiceItem => ({
+  id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+  descricao: "",
+  quantidade: "",
+  valorUnitario: "",
+});
 
 export default function ProformaInvoice() {
   const { toast } = useToast();
@@ -59,15 +71,32 @@ export default function ProformaInvoice() {
     dataVoo: "",
     dolarDia: "",
     data: "",
-    descricao: "",
-    quantidade: "",
-    valorUnitario: "",
+    items: [createEmptyItem()],
   });
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      setSavedInvoices(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      // Migrate old format to new format
+      const migrated = parsed.map((inv: any) => {
+        if (!inv.form.items) {
+          return {
+            ...inv,
+            form: {
+              ...inv.form,
+              items: [{
+                id: "migrated",
+                descricao: inv.form.descricao || "",
+                quantidade: inv.form.quantidade || "",
+                valorUnitario: inv.form.valorUnitario || "",
+              }],
+            },
+          };
+        }
+        return inv;
+      });
+      setSavedInvoices(migrated);
     }
   }, []);
 
@@ -75,14 +104,43 @@ export default function ProformaInvoice() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const total = Number(form.quantidade || 0) * Number(form.valorUnitario || 0);
+  const handleItemChange = (itemId: string, field: keyof InvoiceItem, value: string) => {
+    setForm({
+      ...form,
+      items: form.items.map((item) =>
+        item.id === itemId ? { ...item, [field]: value } : item
+      ),
+    });
+  };
+
+  const addItem = () => {
+    setForm({
+      ...form,
+      items: [...form.items, createEmptyItem()],
+    });
+  };
+
+  const removeItem = (itemId: string) => {
+    if (form.items.length === 1) return;
+    setForm({
+      ...form,
+      items: form.items.filter((item) => item.id !== itemId),
+    });
+  };
+
+  const calculateItemTotal = (item: InvoiceItem) => {
+    return Number(item.quantidade || 0) * Number(item.valorUnitario || 0);
+  };
+
+  const total = form.items.reduce((acc, item) => acc + calculateItemTotal(item), 0);
   const totalBRL = form.dolarDia ? total * Number(form.dolarDia) : 0;
 
   const saveInvoice = () => {
-    if (!form.cliente || !form.descricao) {
+    const hasValidItem = form.items.some((item) => item.descricao);
+    if (!form.cliente || !hasValidItem) {
       toast({
         title: "Campos obrigatórios",
-        description: "Preencha pelo menos o cliente e a descrição.",
+        description: "Preencha pelo menos o cliente e a descrição de um item.",
         variant: "destructive",
       });
       return;
@@ -114,9 +172,7 @@ export default function ProformaInvoice() {
       dataVoo: "",
       dolarDia: "",
       data: "",
-      descricao: "",
-      quantidade: "",
-      valorUnitario: "",
+      items: [createEmptyItem()],
     });
   };
 
@@ -132,8 +188,25 @@ export default function ProformaInvoice() {
 
   const gerarPDF = (invoiceData?: FormData) => {
     const data = invoiceData || form;
-    const invoiceTotal = Number(data.quantidade || 0) * Number(data.valorUnitario || 0);
+    const items = data.items || [];
+    const invoiceTotal = items.reduce(
+      (acc, item) => acc + Number(item.quantidade || 0) * Number(item.valorUnitario || 0),
+      0
+    );
     const invoiceTotalBRL = data.dolarDia ? invoiceTotal * Number(data.dolarDia) : 0;
+
+    const itemsRows = items
+      .map(
+        (item) => `
+        <tr>
+          <td>${item.descricao || "-"}</td>
+          <td style="text-align: center;">${item.quantidade || "-"}</td>
+          <td style="text-align: right;">${item.valorUnitario ? `$${Number(item.valorUnitario).toFixed(2)}` : "-"}</td>
+          <td style="text-align: right;">$${(Number(item.quantidade || 0) * Number(item.valorUnitario || 0)).toFixed(2)}</td>
+        </tr>
+      `
+      )
+      .join("");
 
     const content = `
       <h2 style="border-bottom: 2px solid #333; padding-bottom: 10px;">Proforma Invoice</h2>
@@ -156,12 +229,7 @@ export default function ProformaInvoice() {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>${data.descricao || "-"}</td>
-            <td style="text-align: center;">${data.quantidade || "-"}</td>
-            <td style="text-align: right;">${data.valorUnitario ? `$${Number(data.valorUnitario).toFixed(2)}` : "-"}</td>
-            <td style="text-align: right;">$${invoiceTotal.toFixed(2)}</td>
-          </tr>
+          ${itemsRows}
         </tbody>
       </table>
       <div style="margin-top: 20px; text-align: right;">
@@ -190,6 +258,13 @@ export default function ProformaInvoice() {
     `);
     win.document.close();
     win.print();
+  };
+
+  const getInvoiceItemsSummary = (invoice: SavedInvoice) => {
+    const items = invoice.form.items || [];
+    if (items.length === 0) return "-";
+    if (items.length === 1) return items[0].descricao || "-";
+    return `${items[0].descricao} (+${items.length - 1} itens)`;
   };
 
   return (
@@ -305,43 +380,67 @@ export default function ProformaInvoice() {
                   </div>
 
                   <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Item *</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Itens *</h3>
+                      <Button variant="outline" size="sm" onClick={addItem}>
+                        <Plus className="w-4 h-4 mr-1" />
+                        Adicionar Item
+                      </Button>
+                    </div>
+
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="descricao">Descrição</Label>
-                        <Input
-                          id="descricao"
-                          name="descricao"
-                          placeholder="Descrição do serviço"
-                          value={form.descricao}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="quantidade">Quantidade</Label>
-                          <Input
-                            id="quantidade"
-                            name="quantidade"
-                            type="number"
-                            placeholder="1"
-                            value={form.quantidade}
-                            onChange={handleChange}
-                          />
+                      {form.items.map((item, index) => (
+                        <div key={item.id} className="p-4 border rounded-lg bg-muted/30 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Item {index + 1}
+                            </span>
+                            {form.items.length > 1 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                onClick={() => removeItem(item.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Descrição</Label>
+                            <Input
+                              placeholder="Descrição do serviço"
+                              value={item.descricao}
+                              onChange={(e) => handleItemChange(item.id, "descricao", e.target.value)}
+                            />
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>Quantidade</Label>
+                              <Input
+                                type="number"
+                                placeholder="1"
+                                value={item.quantidade}
+                                onChange={(e) => handleItemChange(item.id, "quantidade", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Valor Unitário (USD)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={item.valorUnitario}
+                                onChange={(e) => handleItemChange(item.id, "valorUnitario", e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="text-right text-sm">
+                            <span className="text-muted-foreground">Subtotal: </span>
+                            <span className="font-medium">${calculateItemTotal(item).toFixed(2)}</span>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="valorUnitario">Valor Unitário (USD)</Label>
-                          <Input
-                            id="valorUnitario"
-                            name="valorUnitario"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={form.valorUnitario}
-                            onChange={handleChange}
-                          />
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
 
@@ -389,16 +488,18 @@ export default function ProformaInvoice() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        <TableRow>
-                          <TableCell>{form.descricao || "-"}</TableCell>
-                          <TableCell className="text-center">{form.quantidade || "-"}</TableCell>
-                          <TableCell className="text-right">
-                            {form.valorUnitario ? `$${Number(form.valorUnitario).toFixed(2)}` : "-"}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            ${total.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
+                        {form.items.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.descricao || "-"}</TableCell>
+                            <TableCell className="text-center">{item.quantidade || "-"}</TableCell>
+                            <TableCell className="text-right">
+                              {item.valorUnitario ? `$${Number(item.valorUnitario).toFixed(2)}` : "-"}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              ${calculateItemTotal(item).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
 
@@ -438,7 +539,7 @@ export default function ProformaInvoice() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg">{invoice.form.cliente}</h3>
                           <p className="text-muted-foreground text-sm">
-                            {invoice.form.descricao} • {invoice.form.quantidade}x
+                            {getInvoiceItemsSummary(invoice)}
                           </p>
                           <p className="text-sm mt-1">
                             <span className="font-medium">Total: ${invoice.total.toFixed(2)}</span>
@@ -519,16 +620,18 @@ export default function ProformaInvoice() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>{viewingInvoice.form.descricao || "-"}</TableCell>
-                    <TableCell className="text-center">{viewingInvoice.form.quantidade || "-"}</TableCell>
-                    <TableCell className="text-right">
-                      {viewingInvoice.form.valorUnitario ? `$${Number(viewingInvoice.form.valorUnitario).toFixed(2)}` : "-"}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      ${viewingInvoice.total.toFixed(2)}
-                    </TableCell>
-                  </TableRow>
+                  {(viewingInvoice.form.items || []).map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.descricao || "-"}</TableCell>
+                      <TableCell className="text-center">{item.quantidade || "-"}</TableCell>
+                      <TableCell className="text-right">
+                        {item.valorUnitario ? `$${Number(item.valorUnitario).toFixed(2)}` : "-"}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        ${(Number(item.quantidade || 0) * Number(item.valorUnitario || 0)).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
 
