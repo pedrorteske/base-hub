@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Printer, FileText, Save, Trash2, Eye, Plus } from "lucide-react";
+import { Printer, FileText, Save, Trash2, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 
 interface InvoiceItem {
   id: string;
@@ -246,7 +246,9 @@ export default function ProformaInvoice() {
         <head>
           <title>Proforma Invoice - ${data.cliente}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+            @page { size: landscape; margin: 20mm; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+            body { font-family: Arial, sans-serif; margin: 30px; color: #333; }
             h2 { margin-bottom: 20px; color: #1a1a1a; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             td, th { border: 1px solid #ddd; padding: 12px 8px; text-align: left; }
@@ -269,24 +271,11 @@ export default function ProformaInvoice() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-primary text-primary-foreground py-6 px-4">
-        <div className="container mx-auto">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-3">
-              <FileText className="w-8 h-8" />
-              <div>
-                <h1 className="text-2xl font-bold">Proforma Invoice</h1>
-                <p className="text-primary-foreground/80 text-sm">Gerador de Invoice</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        title="Proforma Invoice"
+        subtitle="Gerador de Invoice"
+        icon={<FileText className="w-8 h-8" />}
+      />
 
       <main className="container mx-auto py-8 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
