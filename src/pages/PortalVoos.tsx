@@ -23,6 +23,17 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Progress } from "@/components/ui/progress";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 interface Flight {
   id: string;
@@ -377,7 +388,60 @@ export default function PortalVoos() {
                 </Card>
               </div>
 
-              {/* Base Statistics */}
+              {/* Bar Chart */}
+              {baseStats.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5" />
+                      Gráfico de Atendimentos por Base
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      config={{
+                        count: {
+                          label: "Operações",
+                          color: "hsl(var(--primary))",
+                        },
+                      }}
+                      className="h-[300px] w-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={baseStats}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis
+                            dataKey="base"
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                            tick={{ fontSize: 12 }}
+                            className="fill-muted-foreground"
+                          />
+                          <YAxis
+                            tick={{ fontSize: 12 }}
+                            className="fill-muted-foreground"
+                          />
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="count" name="Operações" radius={[4, 4, 0, 0]}>
+                            {baseStats.map((_, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={`hsl(var(--primary) / ${1 - index * 0.1})`}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Base Statistics with Progress */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
