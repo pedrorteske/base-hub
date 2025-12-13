@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Plane, Plus, Trash2, Edit2, Save, X } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Plane, Plus, Trash2, Edit2, Save, X, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { Progress } from "@/components/ui/progress";
 
 interface Flight {
   id: string;
@@ -31,6 +32,12 @@ interface Flight {
   origem: string;
   destino: string;
   createdAt: string;
+}
+
+interface BaseStats {
+  base: string;
+  count: number;
+  percentage: number;
 }
 
 const STORAGE_KEY = "portal_voos";
@@ -56,6 +63,36 @@ export default function PortalVoos() {
       setFlights(JSON.parse(stored));
     }
   }, []);
+
+  // Calculate base statistics from flights (origin and destination)
+  const baseStats = useMemo((): BaseStats[] => {
+    const baseCounts: Record<string, number> = {};
+    
+    flights.forEach((flight) => {
+      // Extract base code from origin (e.g., "SBGR - Guarulhos" -> "SBGR")
+      const originBase = flight.origem.split(" ")[0].toUpperCase();
+      const destBase = flight.destino.split(" ")[0].toUpperCase();
+      
+      if (originBase) {
+        baseCounts[originBase] = (baseCounts[originBase] || 0) + 1;
+      }
+      if (destBase) {
+        baseCounts[destBase] = (baseCounts[destBase] || 0) + 1;
+      }
+    });
+
+    const totalOperations = Object.values(baseCounts).reduce((a, b) => a + b, 0);
+    
+    return Object.entries(baseCounts)
+      .map(([base, count]) => ({
+        base,
+        count,
+        percentage: totalOperations > 0 ? (count / totalOperations) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [flights]);
+
+  const totalOperations = baseStats.reduce((acc, stat) => acc + stat.count, 0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -158,6 +195,10 @@ export default function PortalVoos() {
             <TabsTrigger value="novo">
               <Plus className="w-4 h-4 mr-1" />
               Novo Voo
+            </TabsTrigger>
+            <TabsTrigger value="dashboard">
+              <BarChart3 className="w-4 h-4 mr-1" />
+              Dashboard
             </TabsTrigger>
           </TabsList>
 
@@ -297,6 +338,110 @@ export default function PortalVoos() {
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="dashboard">
+            <div className="grid gap-6">
+              {/* Summary Cards */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Total de Voos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{flights.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Total de Operações
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{totalOperations}</div>
+                    <p className="text-xs text-muted-foreground">Origem + Destino</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Bases Atendidas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{baseStats.length}</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Base Statistics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Atendimentos por Base
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {baseStats.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <BarChart3 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">
+                        Nenhum dado disponível. Adicione voos para visualizar as estatísticas.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {baseStats.map((stat) => (
+                        <div key={stat.base} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{stat.base}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {stat.count} operações ({stat.percentage.toFixed(1)}%)
+                            </span>
+                          </div>
+                          <Progress value={stat.percentage} className="h-2" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Detailed Table */}
+              {baseStats.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Detalhamento por Base</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Base (ICAO)</TableHead>
+                          <TableHead className="text-center">Qtd. Operações</TableHead>
+                          <TableHead className="text-center">Percentual</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {baseStats.map((stat) => (
+                          <TableRow key={stat.base}>
+                            <TableCell className="font-medium">{stat.base}</TableCell>
+                            <TableCell className="text-center">{stat.count}</TableCell>
+                            <TableCell className="text-center">
+                              {stat.percentage.toFixed(1)}%
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </main>
