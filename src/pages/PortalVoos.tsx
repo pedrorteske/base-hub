@@ -39,9 +39,11 @@ interface Flight {
   id: string;
   prefixo: string;
   tipoAeronave: string;
-  dataVoo: string;
+  dataChegada: string;
+  dataSaida: string;
   origem: string;
   destino: string;
+  baseAtendimento: string;
   valorOperacao: number;
   createdAt: string;
 }
@@ -65,9 +67,11 @@ export default function PortalVoos() {
   const [form, setForm] = useState({
     prefixo: "",
     tipoAeronave: "",
-    dataVoo: "",
+    dataChegada: "",
+    dataSaida: "",
     origem: "",
     destino: "",
+    baseAtendimento: "",
     valorOperacao: "",
   });
 
@@ -78,29 +82,20 @@ export default function PortalVoos() {
     }
   }, []);
 
-  // Calculate base statistics from flights (origin and destination)
+  // Calculate base statistics from flights using baseAtendimento
   const baseStats = useMemo((): BaseStats[] => {
     const baseCounts: Record<string, { count: number; totalValor: number }> = {};
     
     flights.forEach((flight) => {
-      // Extract base code from origin (e.g., "SBGR - Guarulhos" -> "SBGR")
-      const originBase = flight.origem.split(" ")[0].toUpperCase();
-      const destBase = flight.destino.split(" ")[0].toUpperCase();
-      const valorPorBase = (flight.valorOperacao || 0) / 2; // Split value between origin and destination
+      // Use baseAtendimento directly for statistics
+      const base = flight.baseAtendimento?.split(" ")[0]?.toUpperCase();
       
-      if (originBase) {
-        if (!baseCounts[originBase]) {
-          baseCounts[originBase] = { count: 0, totalValor: 0 };
+      if (base) {
+        if (!baseCounts[base]) {
+          baseCounts[base] = { count: 0, totalValor: 0 };
         }
-        baseCounts[originBase].count += 1;
-        baseCounts[originBase].totalValor += valorPorBase;
-      }
-      if (destBase) {
-        if (!baseCounts[destBase]) {
-          baseCounts[destBase] = { count: 0, totalValor: 0 };
-        }
-        baseCounts[destBase].count += 1;
-        baseCounts[destBase].totalValor += valorPorBase;
+        baseCounts[base].count += 1;
+        baseCounts[base].totalValor += flight.valorOperacao || 0;
       }
     });
 
@@ -127,15 +122,17 @@ export default function PortalVoos() {
     setForm({
       prefixo: "",
       tipoAeronave: "",
-      dataVoo: "",
+      dataChegada: "",
+      dataSaida: "",
       origem: "",
       destino: "",
+      baseAtendimento: "",
       valorOperacao: "",
     });
   };
 
   const saveFlight = () => {
-    if (!form.prefixo || !form.tipoAeronave || !form.dataVoo || !form.origem || !form.destino) {
+    if (!form.prefixo || !form.tipoAeronave || !form.dataChegada || !form.dataSaida || !form.origem || !form.destino || !form.baseAtendimento) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos para adicionar o voo.",
@@ -148,9 +145,11 @@ export default function PortalVoos() {
       id: Date.now().toString(),
       prefixo: form.prefixo,
       tipoAeronave: form.tipoAeronave,
-      dataVoo: form.dataVoo,
+      dataChegada: form.dataChegada,
+      dataSaida: form.dataSaida,
       origem: form.origem,
       destino: form.destino,
+      baseAtendimento: form.baseAtendimento,
       valorOperacao: parseFloat(form.valorOperacao) || 0,
       createdAt: new Date().toISOString(),
     };
@@ -261,9 +260,11 @@ export default function PortalVoos() {
                         <TableRow>
                           <TableHead>Prefixo</TableHead>
                           <TableHead>Tipo de Aeronave</TableHead>
-                          <TableHead>Data do Voo</TableHead>
+                          <TableHead>Chegada</TableHead>
+                          <TableHead>Saída</TableHead>
                           <TableHead>Origem</TableHead>
                           <TableHead>Destino</TableHead>
+                          <TableHead>Base Atendimento</TableHead>
                           <TableHead className="text-right">Valor (USD)</TableHead>
                           <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
@@ -273,9 +274,11 @@ export default function PortalVoos() {
                           <TableRow key={flight.id}>
                             <TableCell className="font-medium">{flight.prefixo}</TableCell>
                             <TableCell>{flight.tipoAeronave}</TableCell>
-                            <TableCell>{formatDate(flight.dataVoo)}</TableCell>
+                            <TableCell>{formatDate(flight.dataChegada)}</TableCell>
+                            <TableCell>{formatDate(flight.dataSaida)}</TableCell>
                             <TableCell>{flight.origem}</TableCell>
                             <TableCell>{flight.destino}</TableCell>
+                            <TableCell>{flight.baseAtendimento}</TableCell>
                             <TableCell className="text-right font-medium">
                               ${(flight.valorOperacao || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </TableCell>
@@ -336,12 +339,22 @@ export default function PortalVoos() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dataVoo">Data do Voo *</Label>
+                    <Label htmlFor="dataChegada">Data de Chegada *</Label>
                     <Input
-                      id="dataVoo"
-                      name="dataVoo"
+                      id="dataChegada"
+                      name="dataChegada"
                       type="date"
-                      value={form.dataVoo}
+                      value={form.dataChegada}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dataSaida">Data de Saída *</Label>
+                    <Input
+                      id="dataSaida"
+                      name="dataSaida"
+                      type="date"
+                      value={form.dataSaida}
                       onChange={handleChange}
                     />
                   </div>
@@ -355,13 +368,23 @@ export default function PortalVoos() {
                       onChange={handleChange}
                     />
                   </div>
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2">
                     <Label htmlFor="destino">Destino *</Label>
                     <Input
                       id="destino"
                       name="destino"
                       placeholder="SBFL - Florianópolis"
                       value={form.destino}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="baseAtendimento">Base de Atendimento *</Label>
+                    <Input
+                      id="baseAtendimento"
+                      name="baseAtendimento"
+                      placeholder="SBFL - Florianópolis"
+                      value={form.baseAtendimento}
                       onChange={handleChange}
                     />
                   </div>
@@ -571,49 +594,70 @@ export default function PortalVoos() {
           </DialogHeader>
           {editingFlight && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-prefixo">Prefixo</Label>
-                <Input
-                  id="edit-prefixo"
-                  name="prefixo"
-                  value={editingFlight.prefixo}
-                  onChange={handleEditChange}
-                />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-prefixo">Prefixo</Label>
+                  <Input
+                    id="edit-prefixo"
+                    name="prefixo"
+                    value={editingFlight.prefixo}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-tipoAeronave">Tipo de Aeronave</Label>
+                  <Input
+                    id="edit-tipoAeronave"
+                    name="tipoAeronave"
+                    value={editingFlight.tipoAeronave}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-dataChegada">Data de Chegada</Label>
+                  <Input
+                    id="edit-dataChegada"
+                    name="dataChegada"
+                    type="date"
+                    value={editingFlight.dataChegada}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-dataSaida">Data de Saída</Label>
+                  <Input
+                    id="edit-dataSaida"
+                    name="dataSaida"
+                    type="date"
+                    value={editingFlight.dataSaida}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-origem">Origem</Label>
+                  <Input
+                    id="edit-origem"
+                    name="origem"
+                    value={editingFlight.origem}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-destino">Destino</Label>
+                  <Input
+                    id="edit-destino"
+                    name="destino"
+                    value={editingFlight.destino}
+                    onChange={handleEditChange}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-tipoAeronave">Tipo de Aeronave</Label>
+                <Label htmlFor="edit-baseAtendimento">Base de Atendimento</Label>
                 <Input
-                  id="edit-tipoAeronave"
-                  name="tipoAeronave"
-                  value={editingFlight.tipoAeronave}
-                  onChange={handleEditChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-dataVoo">Data do Voo</Label>
-                <Input
-                  id="edit-dataVoo"
-                  name="dataVoo"
-                  type="date"
-                  value={editingFlight.dataVoo}
-                  onChange={handleEditChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-origem">Origem</Label>
-                <Input
-                  id="edit-origem"
-                  name="origem"
-                  value={editingFlight.origem}
-                  onChange={handleEditChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-destino">Destino</Label>
-                <Input
-                  id="edit-destino"
-                  name="destino"
-                  value={editingFlight.destino}
+                  id="edit-baseAtendimento"
+                  name="baseAtendimento"
+                  value={editingFlight.baseAtendimento}
                   onChange={handleEditChange}
                 />
               </div>
