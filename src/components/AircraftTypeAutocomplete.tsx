@@ -40,6 +40,14 @@ export function AircraftTypeAutocomplete({ value, onChange, placeholder, id, nam
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const formatAircraftDisplay = (aircraft: AircraftType): string => {
+    const parts = [aircraft.manufacturer_code];
+    if (aircraft.model_name) parts.push(aircraft.model_name);
+    else if (aircraft.model_no) parts.push(aircraft.model_no);
+    if (aircraft.tdesig) parts.push(`(${aircraft.tdesig})`);
+    return parts.join(" ");
+  };
+
   const filteredAircraft = useMemo(() => {
     if (!inputValue || inputValue.length < 1) return [];
     
@@ -68,15 +76,7 @@ export function AircraftTypeAutocomplete({ value, onChange, placeholder, id, nam
       seen.add(displayText);
       return true;
     });
-  }, [inputValue]);
-
-  const formatAircraftDisplay = (aircraft: AircraftType): string => {
-    const parts = [aircraft.manufacturer_code];
-    if (aircraft.model_name) parts.push(aircraft.model_name);
-    else if (aircraft.model_no) parts.push(aircraft.model_no);
-    if (aircraft.tdesig) parts.push(`(${aircraft.tdesig})`);
-    return parts.join(" ");
-  };
+  }, [inputValue, formatAircraftDisplay]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
