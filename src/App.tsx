@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Cotacao from "./pages/Cotacao";
 import ProformaInvoice from "./pages/ProformaInvoice";
+import PortalVoos from "./pages/PortalVoos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/precos" element={<Pricing />} />
           <Route path="/cotacao" element={<Cotacao />} />
           <Route path="/proforma" element={<ProformaInvoice />} />
+          <Route path="/voos" element={<PortalVoos />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

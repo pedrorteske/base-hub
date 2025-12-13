@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { pricingData, pricingCategories, PricingItem } from "@/data/pricing";
-import { Plane, Fuel, ParkingCircle, Warehouse, Wrench, Users, HardHat, Info, Globe, Home } from "lucide-react";
+import { Fuel, ParkingCircle, Warehouse, Wrench, Users, HardHat, Info, Globe, Home, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NavigationMenu } from "@/components/dashboard/NavigationMenu";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 
 const categoryIcons: Record<string, React.ElementType> = {
   Combustível: Fuel,
@@ -87,23 +87,11 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-navy text-primary-foreground sticky top-0 z-50 shadow-lg">
-        <div className="container py-4">
-          <div className="flex items-center gap-4">
-            <NavigationMenu />
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/20 p-2 rounded-lg">
-                <Plane className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">Tabela de Preços</h1>
-                <p className="text-sm text-primary-foreground/70">Valores padrão para todas as bases</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        title="Tabela de Preços"
+        subtitle="Valores padrão para todas as bases"
+        icon={<DollarSign className="w-8 h-8" />}
+      />
 
       {/* Main Content */}
       <main className="container py-6">

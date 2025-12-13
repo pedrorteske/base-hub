@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Plane, DollarSign, Home, Calculator, FileText } from "lucide-react";
+import { Menu, DollarSign, Home, Calculator, FileText, Plane } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ const navigationItems = [
   { name: "Preços", path: "/precos", icon: DollarSign },
   { name: "Cotação", path: "/cotacao", icon: Calculator },
   { name: "Proforma Invoice", path: "/proforma", icon: FileText },
+  { name: "Portal dos Voos", path: "/voos", icon: Plane },
 ];
 
 export function NavigationMenu() {

@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -32,9 +25,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { 
-  Plane, 
-  Menu, 
-  FileText, 
   Copy, 
   Check,
   Plus,
@@ -48,6 +38,7 @@ import {
 } from "lucide-react";
 import { pricingData, pricingCategories, PricingItem } from "@/data/pricing";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 
 interface SelectedItem {
   item: PricingItem;
@@ -354,51 +345,11 @@ RESUMO FINANCEIRO
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-foreground">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <NavLink to="/" className="w-full cursor-pointer">
-                      <Plane className="mr-2 h-4 w-4" />
-                      Bases
-                    </NavLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <NavLink to="/precos" className="w-full cursor-pointer">
-                      <FileText className="mr-2 h-4 w-4" />
-                      Preços
-                    </NavLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <NavLink to="/cotacao" className="w-full cursor-pointer">
-                      <Calculator className="mr-2 h-4 w-4" />
-                      Cotação
-                    </NavLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Calculator className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-foreground">Cotação de Serviços</h1>
-                  <p className="text-sm text-muted-foreground">Gere e salve cotações</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        title="Cotação de Serviços"
+        subtitle="Gere e salve cotações"
+        icon={<Calculator className="w-8 h-8" />}
+      />
 
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
