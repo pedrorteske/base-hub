@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Plane, Plus, Trash2, Edit2, Save, X, BarChart3, DollarSign } from "lucide-react";
+import { AircraftTypeAutocomplete } from "@/components/AircraftTypeAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -330,12 +331,12 @@ export default function PortalVoos() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="tipoAeronave">Tipo de Aeronave *</Label>
-                    <Input
+                    <AircraftTypeAutocomplete
                       id="tipoAeronave"
                       name="tipoAeronave"
-                      placeholder="Gulfstream G550"
+                      placeholder="Digite para buscar..."
                       value={form.tipoAeronave}
-                      onChange={handleChange}
+                      onChange={(value) => setForm({ ...form, tipoAeronave: value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -606,11 +607,12 @@ export default function PortalVoos() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-tipoAeronave">Tipo de Aeronave</Label>
-                  <Input
+                  <AircraftTypeAutocomplete
                     id="edit-tipoAeronave"
                     name="tipoAeronave"
+                    placeholder="Digite para buscar..."
                     value={editingFlight.tipoAeronave}
-                    onChange={handleEditChange}
+                    onChange={(value) => setEditingFlight({ ...editingFlight, tipoAeronave: value })}
                   />
                 </div>
                 <div className="space-y-2">
