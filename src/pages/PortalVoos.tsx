@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Plane, Plus, Trash2, Edit2, Save, X, BarChart3 } from "lucide-react";
+import { Plane, Plus, Trash2, Edit2, Save, X, BarChart3, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,7 @@ interface Flight {
   dataVoo: string;
   origem: string;
   destino: string;
+  valorOperacao: number;
   createdAt: string;
 }
 
@@ -49,6 +50,7 @@ interface BaseStats {
   base: string;
   count: number;
   percentage: number;
+  totalValor: number;
 }
 
 const STORAGE_KEY = "portal_voos";
@@ -66,6 +68,7 @@ export default function PortalVoos() {
     dataVoo: "",
     origem: "",
     destino: "",
+    valorOperacao: "",
   });
 
   useEffect(() => {
@@ -77,33 +80,44 @@ export default function PortalVoos() {
 
   // Calculate base statistics from flights (origin and destination)
   const baseStats = useMemo((): BaseStats[] => {
-    const baseCounts: Record<string, number> = {};
+    const baseCounts: Record<string, { count: number; totalValor: number }> = {};
     
     flights.forEach((flight) => {
       // Extract base code from origin (e.g., "SBGR - Guarulhos" -> "SBGR")
       const originBase = flight.origem.split(" ")[0].toUpperCase();
       const destBase = flight.destino.split(" ")[0].toUpperCase();
+      const valorPorBase = (flight.valorOperacao || 0) / 2; // Split value between origin and destination
       
       if (originBase) {
-        baseCounts[originBase] = (baseCounts[originBase] || 0) + 1;
+        if (!baseCounts[originBase]) {
+          baseCounts[originBase] = { count: 0, totalValor: 0 };
+        }
+        baseCounts[originBase].count += 1;
+        baseCounts[originBase].totalValor += valorPorBase;
       }
       if (destBase) {
-        baseCounts[destBase] = (baseCounts[destBase] || 0) + 1;
+        if (!baseCounts[destBase]) {
+          baseCounts[destBase] = { count: 0, totalValor: 0 };
+        }
+        baseCounts[destBase].count += 1;
+        baseCounts[destBase].totalValor += valorPorBase;
       }
     });
 
-    const totalOperations = Object.values(baseCounts).reduce((a, b) => a + b, 0);
+    const totalOperations = Object.values(baseCounts).reduce((a, b) => a + b.count, 0);
     
     return Object.entries(baseCounts)
-      .map(([base, count]) => ({
+      .map(([base, data]) => ({
         base,
-        count,
-        percentage: totalOperations > 0 ? (count / totalOperations) * 100 : 0,
+        count: data.count,
+        totalValor: data.totalValor,
+        percentage: totalOperations > 0 ? (data.count / totalOperations) * 100 : 0,
       }))
       .sort((a, b) => b.count - a.count);
   }, [flights]);
 
   const totalOperations = baseStats.reduce((acc, stat) => acc + stat.count, 0);
+  const totalValorGeral = flights.reduce((acc, f) => acc + (f.valorOperacao || 0), 0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -116,6 +130,7 @@ export default function PortalVoos() {
       dataVoo: "",
       origem: "",
       destino: "",
+      valorOperacao: "",
     });
   };
 
@@ -131,7 +146,12 @@ export default function PortalVoos() {
 
     const newFlight: Flight = {
       id: Date.now().toString(),
-      ...form,
+      prefixo: form.prefixo,
+      tipoAeronave: form.tipoAeronave,
+      dataVoo: form.dataVoo,
+      origem: form.origem,
+      destino: form.destino,
+      valorOperacao: parseFloat(form.valorOperacao) || 0,
       createdAt: new Date().toISOString(),
     };
 
@@ -244,6 +264,7 @@ export default function PortalVoos() {
                           <TableHead>Data do Voo</TableHead>
                           <TableHead>Origem</TableHead>
                           <TableHead>Destino</TableHead>
+                          <TableHead className="text-right">Valor (USD)</TableHead>
                           <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -255,6 +276,9 @@ export default function PortalVoos() {
                             <TableCell>{formatDate(flight.dataVoo)}</TableCell>
                             <TableCell>{flight.origem}</TableCell>
                             <TableCell>{flight.destino}</TableCell>
+                            <TableCell className="text-right font-medium">
+                              ${(flight.valorOperacao || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
                                 <Button
@@ -341,6 +365,19 @@ export default function PortalVoos() {
                       onChange={handleChange}
                     />
                   </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="valorOperacao">Valor da Operação (USD) *</Label>
+                    <Input
+                      id="valorOperacao"
+                      name="valorOperacao"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={form.valorOperacao}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <Button onClick={saveFlight} className="w-full" size="lg">
@@ -354,7 +391,7 @@ export default function PortalVoos() {
           <TabsContent value="dashboard">
             <div className="grid gap-6">
               {/* Summary Cards */}
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -384,6 +421,19 @@ export default function PortalVoos() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">{baseStats.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                      <DollarSign className="w-4 h-4" />
+                      Valor Total
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">
+                      ${totalValorGeral.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -488,6 +538,7 @@ export default function PortalVoos() {
                           <TableHead>Base (ICAO)</TableHead>
                           <TableHead className="text-center">Qtd. Operações</TableHead>
                           <TableHead className="text-center">Percentual</TableHead>
+                          <TableHead className="text-right">Valor Total (USD)</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -497,6 +548,9 @@ export default function PortalVoos() {
                             <TableCell className="text-center">{stat.count}</TableCell>
                             <TableCell className="text-center">
                               {stat.percentage.toFixed(1)}%
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-primary">
+                              ${stat.totalValor.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -560,6 +614,18 @@ export default function PortalVoos() {
                   id="edit-destino"
                   name="destino"
                   value={editingFlight.destino}
+                  onChange={handleEditChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-valorOperacao">Valor da Operação (USD)</Label>
+                <Input
+                  id="edit-valorOperacao"
+                  name="valorOperacao"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editingFlight.valorOperacao}
                   onChange={handleEditChange}
                 />
               </div>
