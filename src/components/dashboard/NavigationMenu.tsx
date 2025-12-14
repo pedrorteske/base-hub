@@ -9,7 +9,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
-  { name: "Bases", path: "/", icon: Home },
+  { name: "Início", path: "/", icon: Home },
+  { name: "Bases", path: "/bases", icon: Home },
   { name: "Preços", path: "/precos", icon: DollarSign },
   { name: "Cotação", path: "/cotacao", icon: Calculator },
   { name: "Proforma Invoice", path: "/proforma", icon: FileText },
