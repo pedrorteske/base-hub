@@ -57,11 +57,8 @@ const createEmptyItem = (descricao = "", quantidade = "", valorUnitario = ""): I
   valorUnitario,
 });
 
-const createDefaultItems = (): InvoiceItem[] => [
-  createEmptyItem(),
-  createEmptyItem("ADM FEES - AIRPORT FEES", "15", ""),
-  createEmptyItem("GOV FEES - AIRPORT FEES", "16.62", ""),
-];
+const ADM_FEE_PERCENT = 15;
+const GOV_FEE_PERCENT = 16.62;
 
 export default function ProformaInvoice() {
   const { toast } = useToast();
@@ -77,7 +74,7 @@ export default function ProformaInvoice() {
     dataVoo: "",
     dolarDia: "",
     data: "",
-    items: createDefaultItems(),
+    items: [createEmptyItem()],
   });
 
   useEffect(() => {
@@ -138,7 +135,15 @@ export default function ProformaInvoice() {
     return Number(item.quantidade || 0) * Number(item.valorUnitario || 0);
   };
 
-  const total = form.items.reduce((acc, item) => acc + calculateItemTotal(item), 0);
+  // Subtotal dos serviços (sem taxas)
+  const subtotalServicos = form.items.reduce((acc, item) => acc + calculateItemTotal(item), 0);
+  
+  // Cálculo automático das taxas
+  const admFees = subtotalServicos * (ADM_FEE_PERCENT / 100);
+  const govFees = subtotalServicos * (GOV_FEE_PERCENT / 100);
+  
+  // Total final com taxas
+  const total = subtotalServicos + admFees + govFees;
   const totalBRL = form.dolarDia ? total * Number(form.dolarDia) : 0;
 
   const saveInvoice = () => {
@@ -178,7 +183,7 @@ export default function ProformaInvoice() {
       dataVoo: "",
       dolarDia: "",
       data: "",
-      items: createDefaultItems(),
+      items: [createEmptyItem()],
     });
   };
 
@@ -195,11 +200,14 @@ export default function ProformaInvoice() {
   const gerarPDF = (invoiceData?: FormData) => {
     const data = invoiceData || form;
     const items = data.items || [];
-    const invoiceTotal = items.reduce(
+    const pdfSubtotal = items.reduce(
       (acc, item) => acc + Number(item.quantidade || 0) * Number(item.valorUnitario || 0),
       0
     );
-    const invoiceTotalBRL = data.dolarDia ? invoiceTotal * Number(data.dolarDia) : 0;
+    const pdfAdmFees = pdfSubtotal * (ADM_FEE_PERCENT / 100);
+    const pdfGovFees = pdfSubtotal * (GOV_FEE_PERCENT / 100);
+    const pdfTotal = pdfSubtotal + pdfAdmFees + pdfGovFees;
+    const pdfTotalBRL = data.dolarDia ? pdfTotal * Number(data.dolarDia) : 0;
 
     const itemsRows = items
       .map(
@@ -213,6 +221,21 @@ export default function ProformaInvoice() {
       `
       )
       .join("");
+
+    const feesRows = `
+      <tr style="background-color: #f9f9f9;">
+        <td>ADM FEES - AIRPORT FEES</td>
+        <td style="text-align: center;">${ADM_FEE_PERCENT}%</td>
+        <td style="text-align: right;">-</td>
+        <td style="text-align: right;">$${pdfAdmFees.toFixed(2)}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td>GOV FEES - AIRPORT FEES</td>
+        <td style="text-align: center;">${GOV_FEE_PERCENT}%</td>
+        <td style="text-align: right;">-</td>
+        <td style="text-align: right;">$${pdfGovFees.toFixed(2)}</td>
+      </tr>
+    `;
 
     const content = `
       <h2 style="border-bottom: 2px solid #333; padding-bottom: 10px;">Proforma Invoice</h2>
@@ -229,18 +252,23 @@ export default function ProformaInvoice() {
         <thead>
           <tr>
             <th>Descrição</th>
-            <th style="text-align: center;">Qtd</th>
+            <th style="text-align: center;">Qtd/%</th>
             <th style="text-align: right;">Valor Unit. USD</th>
             <th style="text-align: right;">Total USD</th>
           </tr>
         </thead>
         <tbody>
           ${itemsRows}
+          <tr><td colspan="4" style="border: none; padding: 5px;"></td></tr>
+          ${feesRows}
         </tbody>
       </table>
       <div style="margin-top: 20px; text-align: right;">
-        <p style="font-size: 18px; font-weight: bold;">Total USD: $${invoiceTotal.toFixed(2)}</p>
-        ${data.dolarDia ? `<p style="color: #666;">Total BRL: R$ ${invoiceTotalBRL.toFixed(2)}</p>` : ""}
+        <p style="color: #666;">Subtotal Serviços: $${pdfSubtotal.toFixed(2)}</p>
+        <p style="color: #666;">ADM FEES (${ADM_FEE_PERCENT}%): $${pdfAdmFees.toFixed(2)}</p>
+        <p style="color: #666;">GOV FEES (${GOV_FEE_PERCENT}%): $${pdfGovFees.toFixed(2)}</p>
+        <p style="font-size: 18px; font-weight: bold; margin-top: 10px;">Total USD: $${pdfTotal.toFixed(2)}</p>
+        ${data.dolarDia ? `<p style="color: #666;">Total BRL: R$ ${pdfTotalBRL.toFixed(2)}</p>` : ""}
       </div>
     `;
 
@@ -498,12 +526,30 @@ export default function ProformaInvoice() {
                       </TableBody>
                     </Table>
 
-                    <div className="mt-6 text-right">
+                    {/* Taxas calculadas automaticamente */}
+                    <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+                      <h4 className="text-sm font-medium mb-3">Taxas Automáticas</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>ADM FEES - AIRPORT FEES ({ADM_FEE_PERCENT}%)</span>
+                          <span className="font-medium">${admFees.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>GOV FEES - AIRPORT FEES ({GOV_FEE_PERCENT}%)</span>
+                          <span className="font-medium">${govFees.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 text-right space-y-1">
+                      <p className="text-muted-foreground">
+                        Subtotal Serviços: ${subtotalServicos.toFixed(2)}
+                      </p>
                       <p className="text-xl font-bold">
                         Total USD: ${total.toFixed(2)}
                       </p>
                       {form.dolarDia && (
-                        <p className="text-muted-foreground mt-1">
+                        <p className="text-muted-foreground">
                           Total BRL: R$ {totalBRL.toFixed(2)}
                         </p>
                       )}
