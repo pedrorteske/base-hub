@@ -50,12 +50,18 @@ interface SavedInvoice {
 
 const STORAGE_KEY = "proforma_invoices";
 
-const createEmptyItem = (): InvoiceItem => ({
+const createEmptyItem = (descricao = "", quantidade = "", valorUnitario = ""): InvoiceItem => ({
   id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-  descricao: "",
-  quantidade: "",
-  valorUnitario: "",
+  descricao,
+  quantidade,
+  valorUnitario,
 });
+
+const createDefaultItems = (): InvoiceItem[] => [
+  createEmptyItem(),
+  createEmptyItem("ADM FEES - AIRPORT FEES", "15", ""),
+  createEmptyItem("GOV FEES - AIRPORT FEES", "16.62", ""),
+];
 
 export default function ProformaInvoice() {
   const { toast } = useToast();
@@ -71,7 +77,7 @@ export default function ProformaInvoice() {
     dataVoo: "",
     dolarDia: "",
     data: "",
-    items: [createEmptyItem()],
+    items: createDefaultItems(),
   });
 
   useEffect(() => {
@@ -172,7 +178,7 @@ export default function ProformaInvoice() {
       dataVoo: "",
       dolarDia: "",
       data: "",
-      items: [createEmptyItem()],
+      items: createDefaultItems(),
     });
   };
 

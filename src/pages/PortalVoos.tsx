@@ -267,6 +267,7 @@ export default function PortalVoos() {
                           <TableHead>Destino</TableHead>
                           <TableHead>Base Atendimento</TableHead>
                           <TableHead className="text-right">Valor (USD)</TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -279,9 +280,14 @@ export default function PortalVoos() {
                             <TableCell>{formatDate(flight.dataSaida)}</TableCell>
                             <TableCell>{flight.origem}</TableCell>
                             <TableCell>{flight.destino}</TableCell>
-                            <TableCell>{flight.baseAtendimento}</TableCell>
+                            <TableCell className="font-bold">{flight.baseAtendimento}</TableCell>
                             <TableCell className="text-right font-medium">
                               ${(flight.valorOperacao || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Confirmado
+                              </span>
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
