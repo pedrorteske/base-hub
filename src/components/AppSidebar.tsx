@@ -1,4 +1,4 @@
-import { Home, Building2, DollarSign, FileText, Receipt, CalendarDays } from "lucide-react";
+import { Home, Building2, DollarSign, FileText, Receipt, CalendarDays, Users } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "Cotação", url: "/cotacao", icon: FileText },
   { title: "Proforma Invoice", url: "/proforma-invoice", icon: Receipt },
   { title: "Portal dos Voos", url: "/portal-voos", icon: CalendarDays },
+  { title: "Clientes", url: "/clientes", icon: Users },
 ];
 
 export function AppSidebar() {
