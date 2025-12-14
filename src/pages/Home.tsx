@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plane, MapPin, ArrowRight } from "lucide-react";
+import { Plane, MapPin, ArrowRight, Building2, DollarSign, FileText, Receipt, CalendarDays } from "lucide-react";
 import BrazilMap from "@/components/BrazilMap";
 import { NavigationMenu } from "@/components/dashboard/NavigationMenu";
 import { mockBases } from "@/data/mockBases";
 import { Button } from "@/components/ui/button";
+
+const quickAccessItems = [
+  { label: "Bases", icon: Building2, path: "/bases", color: "text-blue-500", bg: "bg-blue-500/10" },
+  { label: "Preços", icon: DollarSign, path: "/precos", color: "text-green-500", bg: "bg-green-500/10" },
+  { label: "Cotação", icon: FileText, path: "/cotacao", color: "text-amber-500", bg: "bg-amber-500/10" },
+  { label: "Proforma Invoice", icon: Receipt, path: "/proforma-invoice", color: "text-purple-500", bg: "bg-purple-500/10" },
+  { label: "Portal dos Voos", icon: CalendarDays, path: "/portal-voos", color: "text-rose-500", bg: "bg-rose-500/10" },
+];
 
 const Home = () => {
   const navigate = useNavigate();
@@ -35,15 +43,6 @@ const Home = () => {
               </div>
             </div>
           </div>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/bases')}
-            className="gap-2"
-          >
-            Ver Todas as Bases
-            <ArrowRight className="h-4 w-4" />
-          </Button>
         </div>
       </header>
 
@@ -51,7 +50,7 @@ const Home = () => {
       <main className="flex-1 flex flex-col">
         {/* Hero Section */}
         <div className="container px-4 py-8">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
               Rede de Bases Operacionais
             </h2>
@@ -59,9 +58,25 @@ const Home = () => {
               Visualize nossa cobertura nacional e acesse informações detalhadas de cada base
             </p>
           </div>
+
+          {/* Quick Access Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-w-4xl mx-auto mb-8">
+            {quickAccessItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all duration-200 group"
+              >
+                <div className={`h-10 w-10 rounded-lg ${item.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <item.icon className={`h-5 w-5 ${item.color}`} />
+                </div>
+                <span className="text-sm font-medium text-center">{item.label}</span>
+              </button>
+            ))}
+          </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 max-w-xl mx-auto mb-8">
+          <div className="grid grid-cols-3 gap-4 max-w-xl mx-auto mb-6">
             <div className="text-center p-4 rounded-xl bg-card border border-border">
               <div className="text-3xl font-bold text-primary">{totalBases}</div>
               <div className="text-sm text-muted-foreground">Bases</div>
