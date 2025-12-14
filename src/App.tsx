@@ -10,6 +10,7 @@ import Pricing from "./pages/Pricing";
 import Cotacao from "./pages/Cotacao";
 import ProformaInvoice from "./pages/ProformaInvoice";
 import PortalVoos from "./pages/PortalVoos";
+import Clientes from "./pages/Clientes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/cotacao" element={<Cotacao />} />
             <Route path="/proforma-invoice" element={<ProformaInvoice />} />
             <Route path="/portal-voos" element={<PortalVoos />} />
+            <Route path="/clientes" element={<Clientes />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
