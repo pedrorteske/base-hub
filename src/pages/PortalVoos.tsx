@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Plane, Plus, Trash2, Edit2, Save, X, BarChart3, DollarSign } from "lucide-react";
+import { Plane, Plus, Trash2, Edit2, Save, X, BarChart3, DollarSign, CalendarIcon } from "lucide-react";
+import { format, parseISO, isSameDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { AircraftTypeAutocomplete } from "@/components/AircraftTypeAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +37,8 @@ import {
   Cell,
 } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface Flight {
   id: string;
@@ -208,8 +212,42 @@ export default function PortalVoos() {
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString("pt-BR");
+    try {
+      return format(parseISO(dateStr), "dd/MM/yyyy");
+    } catch {
+      return "-";
+    }
   };
+
+  // Get all dates that have flights for calendar highlighting
+  const flightDates = useMemo(() => {
+    const dates: Date[] = [];
+    flights.forEach((flight) => {
+      if (flight.dataChegada) {
+        try {
+          dates.push(parseISO(flight.dataChegada));
+        } catch {}
+      }
+      if (flight.dataSaida) {
+        try {
+          dates.push(parseISO(flight.dataSaida));
+        } catch {}
+      }
+    });
+    return dates;
+  }, [flights]);
+
+  // Get flights for a specific date
+  const getFlightsForDate = (date: Date) => {
+    return flights.filter((flight) => {
+      const chegada = flight.dataChegada ? parseISO(flight.dataChegada) : null;
+      const saida = flight.dataSaida ? parseISO(flight.dataSaida) : null;
+      return (chegada && isSameDay(chegada, date)) || (saida && isSameDay(saida, date));
+    });
+  };
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const selectedDateFlights = selectedDate ? getFlightsForDate(selectedDate) : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,6 +261,10 @@ export default function PortalVoos() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="lista">Voos Confirmados ({flights.length})</TabsTrigger>
+            <TabsTrigger value="calendario">
+              <CalendarIcon className="w-4 h-4 mr-1" />
+              Calendário
+            </TabsTrigger>
             <TabsTrigger value="novo">
               <Plus className="w-4 h-4 mr-1" />
               Novo Voo
@@ -316,6 +358,92 @@ export default function PortalVoos() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="calendario">
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5" />
+                    Calendário de Voos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    locale={ptBR}
+                    className="rounded-md border pointer-events-auto"
+                    modifiers={{
+                      hasFlights: flightDates,
+                    }}
+                    modifiersClassNames={{
+                      hasFlights: "bg-primary/20 text-primary font-bold",
+                    }}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {selectedDate 
+                      ? `Voos em ${format(selectedDate, "dd/MM/yyyy")}`
+                      : "Selecione uma data"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!selectedDate ? (
+                    <div className="py-8 text-center text-muted-foreground">
+                      <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Clique em uma data no calendário para ver os voos.</p>
+                    </div>
+                  ) : selectedDateFlights.length === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground">
+                      <Plane className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Nenhum voo nesta data.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {selectedDateFlights.map((flight) => {
+                        const isChegada = flight.dataChegada && isSameDay(parseISO(flight.dataChegada), selectedDate!);
+                        const isSaida = flight.dataSaida && isSameDay(parseISO(flight.dataSaida), selectedDate!);
+                        return (
+                          <div
+                            key={flight.id}
+                            className="p-4 border rounded-lg space-y-2"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-lg">{flight.prefixo}</span>
+                              <div className="flex gap-2">
+                                {isChegada && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Chegada
+                                  </span>
+                                )}
+                                {isSaida && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    Saída
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              <p><strong>Aeronave:</strong> {flight.tipoAeronave}</p>
+                              <p><strong>Rota:</strong> {flight.origem} → {flight.destino}</p>
+                              <p><strong>Base:</strong> {flight.baseAtendimento}</p>
+                              <p><strong>Chegada:</strong> {formatDate(flight.dataChegada)} | <strong>Saída:</strong> {formatDate(flight.dataSaida)}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="novo">
